@@ -5,7 +5,7 @@ from time import sleep
 import pandas as pd
 import csv
 
-from stock import Stock
+from src.stock import Stock
 
 
 ########################################################################################################################
