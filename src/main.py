@@ -3,6 +3,7 @@ import os
 from src.data import *
 from src.stock import Stock
 from src.task_1 import task_1
+from src.task_2 import task_2
 
 
 ids_path = "../resource/brazil_ids.csv"
@@ -39,5 +40,12 @@ for stock in selected_stocks:
     Es.append(stock.E)
     risks.append(stock.risk)
 
-task_1(selected_stocks, Es, risks, level_VaR)
+df_for_graph = pd.DataFrame(
+        {'σ': risks,
+         'E': Es
+         })
+
+
+#task_1(selected_stocks, level_VaR, df_for_graph)
+task_2(selected_stocks, df_for_graph, level_VaR)
 plt.show()

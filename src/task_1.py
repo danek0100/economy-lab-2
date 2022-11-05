@@ -6,12 +6,7 @@ from src.data import get_market_index
 from src.functions import *
 
 
-def task_1(stocks, Es, risks, level_VaR):
-    df_for_graph = pd.DataFrame(
-        {'σ': risks,
-         'E': Es
-         })
-
+def task_1(stocks, level_VaR, df_for_graph):
     sns.set_style("darkgrid")
     sns.scatterplot(data=df_for_graph, x='σ', y='E', c='#6C8CD5', label='Stocks').set_title("Profitability/Risk Map")
 
