@@ -19,7 +19,26 @@ if not os.path.isdir('../resource/data/'):
     get_data(ids_path)
 
 # Формируем список акций из данных. Формируем логорифмические доходности, а также вычисляем оценки.
+Es = []
+risks = []
+
+stocks_for_remove = []
 stocks = get_Stocks(level_VaR)
+for stock in stocks:
+    if stock.risk > 0.5:
+        stocks_for_remove.append(stock)
+
+for stock in stocks_for_remove:
+    stocks.remove(stock)
+
+for stock in stocks:
+    Es.append(stock.E)
+    risks.append(stock.risk)
+
+df_for_graph = pd.DataFrame(
+        {'σ': risks,
+         'E': Es
+         })
 
 # Выбрали 50 акций, которые входят в состав индекса Bovespa
 selected_stocks_names = ['QUAL3', 'RADL3', 'GOAU4', 'BEEF3', 'MRVE3', 'MULT3', 'NTCO3', 'PETR3', 'PETR4', 'PRIO3',
@@ -34,18 +53,19 @@ for name_stock in selected_stocks_names:
     find_stock = next(stock for stock in stocks if stock.key == name_stock)
     selected_stocks.append(find_stock)
 
-Es = []
-risks = []
+Es_selected = []
+risks_selected = []
 for stock in selected_stocks:
-    Es.append(stock.E)
-    risks.append(stock.risk)
+    Es_selected.append(stock.E)
+    risks_selected.append(stock.risk)
 
-df_for_graph = pd.DataFrame(
-        {'σ': risks,
-         'E': Es
+df_for_graph_selected = pd.DataFrame(
+        {'σ': risks_selected,
+         'E': Es_selected
          })
 
 
-#task_1(selected_stocks, level_VaR, df_for_graph)
-task_2(selected_stocks, df_for_graph, level_VaR)
+#task_1(selected_stocks, level_VaR, df_for_graph_selected)
+#task_2(selected_stocks, level_VaR, df_for_graph_selected)
+task_2(stocks, level_VaR, df_for_graph)
 plt.show()

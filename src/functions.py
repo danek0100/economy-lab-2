@@ -36,7 +36,7 @@ def get_return_mean_cov(stocks):
 
 
 # Оценка портфелей для которыйх короткие продажи разрешены
-def risk_function_for_portfolio_with_short_sales(X, cov_matrix, n_observations=1, sqrt=True):
+def risk_function_for_portfolio(X, cov_matrix, n_observations=1, sqrt=True):
     # оценка риска портфеля
     if sqrt:
         return np.sqrt(np.dot(np.dot(X, cov_matrix), X.T))

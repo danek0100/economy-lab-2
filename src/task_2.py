@@ -1,10 +1,11 @@
-from src.functions import *
-
-import matplotlib.pyplot as plt
+from src.task_1 import task_1
 from sklearn.cluster import KMeans
 
+import matplotlib.pyplot as plt
+import pandas as pd
 
-def task_2(stocks, df_for_graph, level_VaR):
+
+def task_2(stocks, level_VaR, df_for_graph):
     data_frame_for_clustering = df_for_graph.copy()
 
     k_means = KMeans(n_clusters=10, random_state=0)
@@ -40,11 +41,29 @@ def task_2(stocks, df_for_graph, level_VaR):
     plt.xlabel("σ")
     plt.ylabel("E")
 
-    best_ValAtRisks = [1.1 for i in range(10)]
+    Es = []
+    risks = []
+
+    best_ValAtRisks = [1.1 for _ in range(10)]
+    selected_stocks = []
     for cluster_index in range(10):
+        cluster_checked = False
         for stock_index in range(len(stocks)):
             if data_frame_for_clustering['cluster'][stock_index] == cluster_index and \
                     best_ValAtRisks[cluster_index] > stocks[stock_index].VaR[level_VaR]:
-                best_ValAtRisks = stocks[stock_index].VaR[level_VaR]
+                if cluster_checked > 0:
+                    selected_stocks.pop()
+                    Es.pop()
+                    risks.pop()
+                best_ValAtRisks[cluster_index] = stocks[stock_index].VaR[level_VaR]
+                selected_stocks.append(stocks[stock_index])
+                Es.append(stocks[stock_index].E)
+                risks.append(stocks[stock_index].risk)
+                cluster_checked = True
 
-    print(best_ValAtRisks)
+    df_for_graph = pd.DataFrame(
+        {'σ': risks,
+         'E': Es
+         })
+
+    task_1(selected_stocks, level_VaR, df_for_graph)
