@@ -1,17 +1,15 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from resource.constant_strings import *
 from tqdm import tqdm_notebook
 from src.data import get_market_index
 from src.functions import *
 
 
-def task_1(stocks, level_VaR, df_for_graph):
-    sns.set_style("darkgrid")
-    plt.figure(1)
-    sns.scatterplot(data=df_for_graph, x='σ', y='E', c='#6C8CD5', label='Stocks').set_title(
-        "Profitability/Risk Map")
-
+def task_1(painter, stocks, level_VaR, df_for_graph, set_name, colour_base):
+    painter.plot_stock_map(df_for_graph, set_name)
+    painter.plot()
     sigmas = []
     returns = []
     bounds = ((None, None),)
@@ -37,19 +35,11 @@ def task_1(stocks, level_VaR, df_for_graph):
         sigmas.append(risk_function_for_portfolio(X, cov_matrix))
         returns.append(np.dot(X, mean_vec))
 
-    plt.figure(2)
-    sns.scatterplot(data=df_for_graph, x='σ', y='E', c='#6C8CD5', label='Stocks').set_title(
-        "Profitability/Risk Map")
-    plt.scatter(min_risk,
-                min_risk_return,
-                c='#BE008A',
-                marker='^',
-                s=300,
-                label='Portfolio with minimal risk. Short selling is allowed.',
-                edgecolors='white', )
-    plt.plot(sigmas, returns, 'r--', label='Effective front. Short selling is allowed.')
-    plt.legend()
-
+    painter.plot_stock_map(df_for_graph, set_name)
+    painter.plot_effective_point(min_risk, min_risk_return, '#BE008A',
+                                 pwmr + ' ' + ssia)
+    painter.plot_effective_front(sigmas, returns, 'r--', ef + ' ' + ssia)
+    painter.plot()
     # Рассмотрим случай в котором короткие продажи запрещены
     sigmas_without_short_sales = []
     returns_without_short_sales = []
@@ -62,8 +52,7 @@ def task_1(stocks, level_VaR, df_for_graph):
                                                         cov_matrix,
                                                         bounds)
 
-    min_risk_without_short_sales = risk_function_for_portfolio(X_min_risk_without_short_sales,
-                                                                                cov_matrix)
+    min_risk_without_short_sales = risk_function_for_portfolio(X_min_risk_without_short_sales, cov_matrix)
     min_risk_return_without_short_sales = np.dot(X_min_risk_without_short_sales, mean_vec)
     target_range = np.linspace(min_risk_return_without_short_sales, 0.1, 100)
 
@@ -79,61 +68,43 @@ def task_1(stocks, level_VaR, df_for_graph):
             risk_function_for_portfolio(X_without_short_sales, cov_matrix))
         returns_without_short_sales.append(np.dot(X_without_short_sales, mean_vec))
 
-    plt.figure(3)
-    sns.scatterplot(data=df_for_graph, x='σ', y='E', c='#6C8CD5', label='Stocks').set_title(
-        "Profitability/Risk Map")
-    plt.plot(sigmas_without_short_sales, returns_without_short_sales, 'c--', label='Effective front. Short selling '
-                                                                                   'prohibited.')
-    plt.scatter(min_risk_without_short_sales,
-                min_risk_return_without_short_sales,
-                c='#3BDA00',
-                marker='^',
-                s=300,
-                edgecolors='white',
-                label='Portfolio with minimal risk. Short selling prohibited.')
-    plt.legend()
+    painter.plot_stock_map(df_for_graph, set_name)
+    painter.plot_effective_point(min_risk_without_short_sales, min_risk_return_without_short_sales, '#3BDA00',
+                                 pwmr + ' ' + ssp)
+    painter.plot_effective_front(sigmas_without_short_sales, returns_without_short_sales, 'c--',
+                                 ef + ' ' + ssp)
+    painter.plot()
 
-    plt.figure(4)
     points = 100
-    sns.scatterplot(data=df_for_graph, x='σ', y='E', c='#6C8CD5', label='Stocks').set_title(
-        "Profitability/Risk Map")
-    plt.plot(sigmas[:points], returns[:points], 'r--', label='Effective front. Short selling is allowed.')
-    plt.plot(sigmas_without_short_sales, returns_without_short_sales, 'c--', label='Effective front. Short selling '
-                                                                                   'prohibited.')
-
-    plt.scatter(min_risk,
-                min_risk_return,
-                c='#BE008A',
-                marker='^',
-                s=300,
-                edgecolors='white',
-                label='Portfolio with minimal risk. Short selling is allowed.')
-
-    plt.scatter(min_risk_without_short_sales,
-                min_risk_return_without_short_sales,
-                c='#3BDA00',
-                marker='^',
-                s=300,
-                edgecolors='white',
-                label='Portfolio with minimal risk. Short selling prohibited.')
+    painter.plot_stock_map(df_for_graph, set_name)
+    painter.plot_effective_point(min_risk, min_risk_return, '#BE008A',
+                                 pwmr + ' ' + ssia)
+    painter.plot_effective_front(sigmas, returns, 'r--', ef + ' ' + ssia, points)
+    painter.plot_effective_point(min_risk_without_short_sales, min_risk_return_without_short_sales, '#3BDA00',
+                                 pwmr + ' ' + ssp)
+    painter.plot_effective_front(sigmas_without_short_sales, returns_without_short_sales, 'c--',
+                                 ef + ' ' + ssp)
 
     risk_equals = risk_function_for_portfolio(np.ones(len(stocks)) / len(stocks), cov_matrix)
     return_equals = np.dot((np.ones(len(stocks)) / len(stocks)), mean_vec)
 
-    plt.scatter(risk_equals,
-                return_equals,
-                c='#72217D',
-                marker='^',
-                s=300,
-                label='Balanced portfolio',
-                edgecolors='white')
-
     index = get_market_index('^BVSP', level_VaR)
+    painter.plot_point(risk_equals, return_equals, '#72217D', '^', 'Balanced portfolio')
+    painter.plot_point(index.risk, index.E, 'yellow', '8', 'Market index - Bovespa')
+    painter.plot()
 
-    plt.scatter(index.risk, index.E,
-                c='yellow',
-                marker='8',
-                s=300,
-                label='Market index - Bovespa',
-                edgecolors='white')
-    plt.legend()
+    # Сравнение
+    colour_base *= 4
+    base_colours = ['#BE008A', 'r--', '#3BDA00', 'c--', '#FFBD88', 'g--', '#FFCF48', 's--', '#422C15', 'b--', '#331414',
+                    'y--']
+    painter.plot_effective_point(min_risk, min_risk_return, base_colours[colour_base],
+                                 pwmr + ' ' + ssia, 100)
+    painter.plot_effective_front(sigmas, returns, base_colours[colour_base+1], ef + ' ' + ssia, points, 100)
+    painter.plot_effective_point(min_risk_without_short_sales, min_risk_return_without_short_sales,
+                                 base_colours[colour_base+2], pwmr + ' ' + ssp, 100)
+    painter.plot_effective_front(sigmas_without_short_sales, returns_without_short_sales, base_colours[colour_base+3],
+                                 ef + ' ' + ssp, -1, 100)
+
+    if colour_base == 0:
+        painter.plot_point(risk_equals, return_equals, '#72217D', '^', 'Balanced portfolio', 100)
+        painter.plot_point(index.risk, index.E, 'yellow', '8', 'Market index - Bovespa', 100)

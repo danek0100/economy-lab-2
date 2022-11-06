@@ -4,7 +4,7 @@ from src.data import *
 from src.stock import Stock
 from src.task_1 import task_1
 from src.task_2 import task_2
-
+from src.painter import Painter
 
 ids_path = "../resource/brazil_ids.csv"
 level_VaR = '0.95'
@@ -64,8 +64,11 @@ df_for_graph_selected = pd.DataFrame(
          'E': Es_selected
          })
 
+painter = Painter()
+painter.plot_stock_map(df_for_graph, "Compare of effective front. Profitability/Risk Map", 100)
 
-#task_1(selected_stocks, level_VaR, df_for_graph_selected)
-#task_2(selected_stocks, level_VaR, df_for_graph_selected)
-task_2(stocks, level_VaR, df_for_graph)
+task_1(painter, selected_stocks, level_VaR, df_for_graph_selected, "50 from BVSPA. Profitability/Risk Map", 0)
+task_2(painter, selected_stocks, level_VaR, df_for_graph_selected, "10 from BVSPA. Profitability/Risk Map", 1)
+task_2(painter, stocks, level_VaR, df_for_graph, "10 from Brazilian Market. Profitability/Risk Map", 2)
+
 plt.show()

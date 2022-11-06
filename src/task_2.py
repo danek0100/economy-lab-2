@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-def task_2(stocks, level_VaR, df_for_graph):
+def task_2(painter, stocks, level_VaR, df_for_graph, set_name, colour_base):
     data_frame_for_clustering = df_for_graph.copy()
 
     k_means = KMeans(n_clusters=10, random_state=0)
@@ -34,12 +34,8 @@ def task_2(stocks, level_VaR, df_for_graph):
                                                                             6: colors[6], 7: colors[7], 8: colors[8],
                                                                             9: colors[9]})
 
-    plt.scatter(x=data_frame_for_clustering['σ'], y=data_frame_for_clustering['E'],
-                c=data_frame_for_clustering['c'], alpha=0.6, s=10)
-
-    plt.title('Splitting stocks into clusters')
-    plt.xlabel("σ")
-    plt.ylabel("E")
+    painter.plot_clusters(data_frame_for_clustering, 0.6, 10, 'Splitting stocks into clusters')
+    painter.plot()
 
     Es = []
     risks = []
@@ -66,4 +62,4 @@ def task_2(stocks, level_VaR, df_for_graph):
          'E': Es
          })
 
-    task_1(selected_stocks, level_VaR, df_for_graph)
+    task_1(painter, selected_stocks, level_VaR, df_for_graph, set_name, colour_base)

@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
-from tqdm import tqdm_notebook
 
 
 # Печать карты (риск, доходность).
@@ -50,7 +49,6 @@ def optimize_portfolio(risk_estimation_function,
                        cov_matrix,
                        bounds,
                        target_return=None):
-
     # оптимизатор с итеративным методом МНК SLSQP решает задачу мимнимизации уравнения Лагранжа
     X = np.ones(returns.shape[1])
     X = X / X.sum()
