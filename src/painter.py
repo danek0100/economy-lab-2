@@ -12,6 +12,7 @@ class Painter:
             number_of_figure = self._number_of_figure
         plt.figure(number_of_figure)
         sns.scatterplot(data=df_for_graph, x='σ', y='E', c='#6C8CD5', label='Stocks').set_title(set_name)
+        plt.legend(["Stocks"])
 
     def plot_effective_point(self, min_risk, min_risk_return, color, label, number_of_figure=0):
         if number_of_figure == 0:
@@ -46,8 +47,18 @@ class Painter:
         plt.ylabel("E")
         plt.legend()
 
+    def plot_map_with_portfolios(self, df_for_graph, min_risk, min_risk_return, gamma, message,
+                                 title, number_of_figure=0):
+        if number_of_figure == 0:
+            number_of_figure = self._number_of_figure
+        plt.figure(number_of_figure)
+
+        sns.set_style("darkgrid")
+        sns.scatterplot(data=df_for_graph, x='σ', y='E', c='#6C8CD5', label='Stocks').set_title(title)
+        for ind, risk_level in enumerate(gamma):
+            plt.scatter(min_risk[ind], min_risk_return[ind],
+                        marker='^', s=300, edgecolors='white', label=message + str(risk_level))
+        plt.legend()
+
     def plot(self):
         self._number_of_figure += 1
-
-
-

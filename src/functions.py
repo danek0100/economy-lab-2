@@ -3,24 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
-
-
-# Печать карты (риск, доходность).
-def plot_map(df_for_graph):
-    fig = plt.figure()
-    sns.set_style("darkgrid")
-    sns.scatterplot(data=df_for_graph, x='σ', y='E', c='#6C8CD5', label='Stocks').set_title("Profitability/Risk Map")
-    fig.legend(["Stocks"])
-    return fig
-
-
-def scatter_draw(stock1, stock2, keys):
-    plt.grid(True)
-    plt.scatter(stock1, stock2, edgecolors='white')
-    plt.xlabel(keys[0])
-    plt.ylabel(keys[1])
-    plt.title(keys[2])
-    plt.show()
+from tqdm import tqdm_notebook
+from src.data import get_market_index
+from scipy import stats
 
 
 def get_return_mean_cov(stocks):
@@ -65,3 +50,61 @@ def optimize_portfolio(risk_estimation_function,
                     method='SLSQP',
                     constraints=constraints,
                     bounds=bounds).x
+
+
+# эту функцию мы должны минимизировать
+def objective_function(X, returns, gamma, cov_matrix):
+    # gamma - наше отношение к риску
+    return - np.dot(returns, X) + gamma * risk_function_for_portfolio(X, cov_matrix)
+
+
+# Ищем оптимальный портфель, решаем задачу оптимизации
+def search_optimal_portfolio_with_attitude_to_risk(selected_objective_function, returns, cov_matrix, gamma, bounds, N):
+    X = np.ones(N)
+    X = X / X.sum()
+    bounds = bounds * N
+
+    # линейное ограничение, что сумма долей должна быть равна 1
+    constraints = [{'type': 'eq', 'fun': lambda x: np.sum(x) - 1.0}]
+
+    return minimize(selected_objective_function, X, args=(returns, gamma, cov_matrix), method='SLSQP',
+                    constraints=constraints, bounds=bounds).x
+
+
+def risk_aversion_computing(stocks, short_selling_is_allowed, gammas):
+    risk_of_the_optimal_portfolio_with_minimal_risk = []
+    profitability_of_the_optimal_portfolio_with_minimal_risk = []
+    losses = {}
+    N = 50  # количество активов
+    E = []
+    for stock in stocks:
+        E.append(stock.E)
+
+    # Возвращает много чего интересного матрицу, вектор, матрицу ковариации.
+    r_matrix, mean_vec, cov_matrix = get_return_mean_cov(stocks)
+    if short_selling_is_allowed:
+        bounds = ((-1, 1),)
+    else:
+        bounds = ((0, 1),)
+    for gamma in gammas:
+        shares_of_the_optimal_portfolio_with_minimal_risk = search_optimal_portfolio_with_attitude_to_risk(
+            objective_function, E, cov_matrix, gamma, bounds, N)
+        risk_of_the_optimal_portfolio_with_minimal_risk.append(
+            risk_function_for_portfolio(shares_of_the_optimal_portfolio_with_minimal_risk, cov_matrix))
+        profitability_of_the_optimal_portfolio_with_minimal_risk.append(
+            np.dot(shares_of_the_optimal_portfolio_with_minimal_risk, E))
+        losses[gamma] = - np.dot(r_matrix, shares_of_the_optimal_portfolio_with_minimal_risk)
+    return risk_of_the_optimal_portfolio_with_minimal_risk, profitability_of_the_optimal_portfolio_with_minimal_risk, \
+           losses
+
+
+def VaR_for_portfolios(gammas, losses_):
+    confidence_lvl = 0.95
+    VaR = {}
+    for gamma in gammas:
+        print('VaR with confidence level %s:' % gamma)
+        loss = losses_[gamma]
+        loss = loss[np.isfinite(loss)]
+        VaR[confidence_lvl] = np.quantile(loss, confidence_lvl)
+        print('Losses will not exceed %.4f with %.2f%s certainty.' % (
+            np.round(VaR[confidence_lvl], 4), confidence_lvl, '%'))
