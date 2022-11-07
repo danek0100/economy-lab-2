@@ -58,6 +58,10 @@ def objective_function(X, returns, gamma, cov_matrix):
     return - np.dot(returns, X) + gamma * risk_function_for_portfolio(X, cov_matrix)
 
 
+def objective_function_for_model(x, cov_matrix, mean_vector, risk_free_mean):
+    return float(-(x.dot(mean_vector) - risk_free_mean) / np.sqrt(np.dot(np.dot(x, cov_matrix), x.T)))
+
+
 # Ищем оптимальный портфель, решаем задачу оптимизации
 def search_optimal_portfolio_with_attitude_to_risk(selected_objective_function, returns, cov_matrix, gamma, bounds, N):
     X = np.ones(N)
@@ -75,7 +79,7 @@ def risk_aversion_computing(stocks, short_selling_is_allowed, gammas):
     risk_of_the_optimal_portfolio_with_minimal_risk = []
     profitability_of_the_optimal_portfolio_with_minimal_risk = []
     losses = {}
-    N = 50  # количество активов
+    N = len(stocks)  # количество активов
     E = []
     for stock in stocks:
         E.append(stock.E)
@@ -108,3 +112,58 @@ def VaR_for_portfolios(gammas, losses_):
         VaR[confidence_lvl] = np.quantile(loss, confidence_lvl)
         print('Losses will not exceed %.4f with %.2f%s certainty.' % (
             np.round(VaR[confidence_lvl], 4), confidence_lvl, '%'))
+
+
+def optimal_portfolio_sharp_ratio(virtual_stock_E, N, cov_matrix, E, bounds):
+    X = np.ones(N)
+    X = X / X.sum()
+    bounds = bounds * N
+    constraints = [{'type': 'eq', 'fun': lambda x: np.sum(x) - 1.0}]
+    minimized = minimize(objective_function_for_model,
+                         X,
+                         args=(cov_matrix, E, virtual_stock_E,),
+                         method='SLSQP',
+                         constraints=constraints,
+                         bounds=bounds).x
+    return minimized
+
+
+def optimal_portfolio_computing(stocks, virtual_stock, short_is_allowed):
+    virtual_stock_E = virtual_stock[1]  ## E
+    N = len(stocks)
+    r_matrix, _, cov_matrix = get_return_mean_cov(stocks)
+    E = []
+    for stock in stocks:
+        E.append(stock.E)
+
+    if short_is_allowed:
+        bounds = ((-1, 1),)
+    else:
+        bounds = ((0, 1),)
+
+    optimum_portfolio_weights = optimal_portfolio_sharp_ratio(virtual_stock_E, N, cov_matrix, E, bounds)
+
+    the_best_risk_sharp = risk_function_for_portfolio(optimum_portfolio_weights, cov_matrix)
+    the_best_E_sharp = np.dot(optimum_portfolio_weights, E)
+    losses = -np.dot(r_matrix, optimum_portfolio_weights)
+
+    return the_best_risk_sharp, the_best_E_sharp, losses
+
+
+def VaR_for_portfolio(losses):
+    confidence_lvl = 0.95
+    loss = losses[np.isfinite(losses)]
+    print(
+        'Losses will not exceed %.4f with %.2f%s certainty.' % (np.quantile(loss, confidence_lvl), confidence_lvl, '%'))
+
+
+def count_virtual_stock_without_risk(stocks):
+    stocks_sorted_risks = sorted(stocks, key=lambda x: x.risk)
+    sum_el = 3
+    average_E = 0.0
+    for stock in stocks_sorted_risks[:sum_el - 1]:
+        average_E += stock.E
+    average_E /= sum_el
+    stocks_sorted_E = sorted(stocks_sorted_risks[:sum_el - 1], key=lambda x: x.E)
+    downgrade_to = abs(stocks_sorted_E[0].E - stocks_sorted_E[-1].E)
+    return [0, average_E - downgrade_to]

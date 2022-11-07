@@ -11,6 +11,7 @@ class Painter:
         if number_of_figure == 0:
             number_of_figure = self._number_of_figure
         plt.figure(number_of_figure)
+
         sns.scatterplot(data=df_for_graph, x='σ', y='E', c='#6C8CD5', label='Stocks').set_title(set_name)
         plt.legend(["Stocks"])
 
@@ -18,6 +19,7 @@ class Painter:
         if number_of_figure == 0:
             number_of_figure = self._number_of_figure
         plt.figure(number_of_figure)
+
         plt.scatter(min_risk, min_risk_return, c=color, marker='^', s=300, label=label, edgecolors='white')
         plt.legend()
 
@@ -25,6 +27,7 @@ class Painter:
         if number_of_figure == 0:
             number_of_figure = self._number_of_figure
         plt.figure(number_of_figure)
+
         plt.plot(sigmas[:points], returns[:points], color, label=label)
         plt.legend()
 
@@ -58,6 +61,35 @@ class Painter:
         for ind, risk_level in enumerate(gamma):
             plt.scatter(min_risk[ind], min_risk_return[ind],
                         marker='^', s=300, edgecolors='white', label=message + str(risk_level))
+        plt.legend()
+
+    def plot_line_graph_from_df(self, df, y, title, number_of_figure=0):
+        if number_of_figure == 0:
+            number_of_figure = self._number_of_figure
+        plt.figure(number_of_figure)
+
+        df.plot(y=[y], grid=True, figsize=(16, 3))
+        plt.title(title, size=15)
+
+    def plot_gist_from_df(self, df, bins, number_of_figure=0):
+        if number_of_figure == 0:
+            number_of_figure = self._number_of_figure
+        plt.figure(number_of_figure)
+
+        plt.grid()
+        sns.displot(df, bins=bins)
+
+    def plot_portfolio(self, the_best_risk_sharp, the_best_E_sharp, virtual_stock, message, color, number_of_figure=0):
+        if number_of_figure == 0:
+            number_of_figure = self._number_of_figure
+        plt.figure(number_of_figure)
+
+        plt.scatter(the_best_risk_sharp, the_best_E_sharp,
+                    marker='^', s=300,
+                    c=color,
+                    label=message,
+                    edgecolors='white')
+        plt.scatter(virtual_stock[0], virtual_stock[1], c='red', label='Virtual stock without risk')
         plt.legend()
 
     def plot(self):

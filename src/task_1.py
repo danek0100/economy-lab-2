@@ -7,6 +7,12 @@ from src.data import get_market_index
 from src.functions import *
 
 
+def call_plot_effective_results(painter, min_risk, min_risk_return, sigmas, returns, colour_point, colour_line, end,
+                                points=-1, title='', figure_number=0):
+    painter.plot_effective_point(min_risk, min_risk_return, colour_point, title + pwmr + ' ' + end, figure_number)
+    painter.plot_effective_front(sigmas, returns, colour_line, title + ef + ' ' + end, points, figure_number)
+
+
 def task_1(painter, stocks, level_VaR, df_for_graph, set_name, colour_base):
     painter.plot_stock_map(df_for_graph, set_name)
     painter.plot()
@@ -36,9 +42,7 @@ def task_1(painter, stocks, level_VaR, df_for_graph, set_name, colour_base):
         returns.append(np.dot(X, mean_vec))
 
     painter.plot_stock_map(df_for_graph, set_name)
-    painter.plot_effective_point(min_risk, min_risk_return, '#BE008A',
-                                 pwmr + ' ' + ssia)
-    painter.plot_effective_front(sigmas, returns, 'r--', ef + ' ' + ssia)
+    call_plot_effective_results(painter, min_risk, min_risk_return, sigmas, returns, '#BE008A', 'r--', ssia)
     painter.plot()
     # Рассмотрим случай в котором короткие продажи запрещены
     sigmas_without_short_sales = []
@@ -69,21 +73,15 @@ def task_1(painter, stocks, level_VaR, df_for_graph, set_name, colour_base):
         returns_without_short_sales.append(np.dot(X_without_short_sales, mean_vec))
 
     painter.plot_stock_map(df_for_graph, set_name)
-    painter.plot_effective_point(min_risk_without_short_sales, min_risk_return_without_short_sales, '#3BDA00',
-                                 pwmr + ' ' + ssp)
-    painter.plot_effective_front(sigmas_without_short_sales, returns_without_short_sales, 'c--',
-                                 ef + ' ' + ssp)
+    call_plot_effective_results(painter, min_risk_without_short_sales, min_risk_return_without_short_sales,
+                                sigmas_without_short_sales, returns_without_short_sales, '#3BDA00', 'c--', ssp)
     painter.plot()
 
     points = 100
     painter.plot_stock_map(df_for_graph, set_name)
-    painter.plot_effective_point(min_risk, min_risk_return, '#BE008A',
-                                 pwmr + ' ' + ssia)
-    painter.plot_effective_front(sigmas, returns, 'r--', ef + ' ' + ssia, points)
-    painter.plot_effective_point(min_risk_without_short_sales, min_risk_return_without_short_sales, '#3BDA00',
-                                 pwmr + ' ' + ssp)
-    painter.plot_effective_front(sigmas_without_short_sales, returns_without_short_sales, 'c--',
-                                 ef + ' ' + ssp)
+    call_plot_effective_results(painter, min_risk, min_risk_return, sigmas, returns, '#BE008A', 'r--', ssia, points)
+    call_plot_effective_results(painter, min_risk_without_short_sales, min_risk_return_without_short_sales,
+                                sigmas_without_short_sales, returns_without_short_sales, '#3BDA00', 'c--', ssp)
 
     risk_equals = risk_function_for_portfolio(np.ones(len(stocks)) / len(stocks), cov_matrix)
     return_equals = np.dot((np.ones(len(stocks)) / len(stocks)), mean_vec)
@@ -97,13 +95,11 @@ def task_1(painter, stocks, level_VaR, df_for_graph, set_name, colour_base):
     colour_base *= 4
     base_colours = ['#BE008A', 'r--', '#3BDA00', 'c--', '#FFBD88', 'g--', '#FFCF48', 's--', '#422C15', 'b--', '#331414',
                     'y--']
-    painter.plot_effective_point(min_risk, min_risk_return, base_colours[colour_base],
-                                 pwmr + ' ' + ssia, 100)
-    painter.plot_effective_front(sigmas, returns, base_colours[colour_base+1], ef + ' ' + ssia, points, 100)
-    painter.plot_effective_point(min_risk_without_short_sales, min_risk_return_without_short_sales,
-                                 base_colours[colour_base+2], pwmr + ' ' + ssp, 100)
-    painter.plot_effective_front(sigmas_without_short_sales, returns_without_short_sales, base_colours[colour_base+3],
-                                 ef + ' ' + ssp, -1, 100)
+    call_plot_effective_results(painter, min_risk, min_risk_return, sigmas, returns,
+                                base_colours[colour_base], base_colours[colour_base+1], ssia, points, '', 100)
+    call_plot_effective_results(painter, min_risk_without_short_sales, min_risk_return_without_short_sales,
+                                sigmas_without_short_sales, returns_without_short_sales,
+                                base_colours[colour_base+2], base_colours[colour_base+3], ssp, -1, '', 100)
 
     if colour_base == 0:
         painter.plot_point(risk_equals, return_equals, '#72217D', '^', 'Balanced portfolio', 100)

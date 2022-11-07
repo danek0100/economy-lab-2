@@ -63,3 +63,4 @@ def task_2(painter, stocks, level_VaR, df_for_graph, set_name, colour_base):
          })
 
     task_1(painter, selected_stocks, level_VaR, df_for_graph, set_name, colour_base)
+    return selected_stocks, df_for_graph
