@@ -165,5 +165,5 @@ def count_virtual_stock_without_risk(stocks):
         average_E += stock.E
     average_E /= sum_el
     stocks_sorted_E = sorted(stocks_sorted_risks[:sum_el - 1], key=lambda x: x.E)
-    downgrade_to = abs(stocks_sorted_E[0].E - stocks_sorted_E[-1].E)
+    downgrade_to = abs(stocks_sorted_E[0].E - stocks_sorted_E[-1].E)/2.0
     return [0, average_E - downgrade_to]

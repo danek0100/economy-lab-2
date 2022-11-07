@@ -18,7 +18,7 @@ def task_5(painter, stocks, df_for_graph):
     the_best_risk_sharp, the_best_E_sharp, losses = optimal_portfolio_computing(stocks, virtual_stock, short_is_allowed)
     message = "Optimal Sharpe portfolio. Short selling is allowed."
     color = '#A62500'
-    painter.plot_portfolio(the_best_risk_sharp, the_best_E_sharp, virtual_stock, message, color)
+    painter.plot_portfolio(the_best_risk_sharp, the_best_E_sharp, message, color)
     print("Short selling is allowed.")
     VaR_for_portfolio(losses)
 
@@ -30,7 +30,7 @@ def task_5(painter, stocks, df_for_graph):
         optimal_portfolio_computing(stocks, virtual_stock, short_is_allowed)
     message = "Optimal Sharpe portfolio. Short selling is prohibited."
     color = "#FF9273"
-    painter.plot_portfolio(the_best_risk_sharp_no_shorts, the_best_E_sharp_no_shorts, virtual_stock, message, color)
+    painter.plot_portfolio(the_best_risk_sharp_no_shorts, the_best_E_sharp_no_shorts, message, color)
     painter.plot()
     print("Short selling is prohibited.")
     VaR_for_portfolio(losses_no_shorts)

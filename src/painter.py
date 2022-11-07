@@ -79,7 +79,7 @@ class Painter:
         plt.grid()
         sns.displot(df, bins=bins)
 
-    def plot_portfolio(self, the_best_risk_sharp, the_best_E_sharp, virtual_stock, message, color, number_of_figure=0):
+    def plot_portfolio(self, the_best_risk_sharp, the_best_E_sharp, message, color, number_of_figure=0):
         if number_of_figure == 0:
             number_of_figure = self._number_of_figure
         plt.figure(number_of_figure)
@@ -89,7 +89,6 @@ class Painter:
                     c=color,
                     label=message,
                     edgecolors='white')
-        plt.scatter(virtual_stock[0], virtual_stock[1], c='red', label='Virtual stock without risk')
         plt.legend()
 
     def plot(self):
