@@ -91,5 +91,12 @@ class Painter:
                     edgecolors='white')
         plt.legend()
 
+    def plot_pca(self, pca_matrix, number_of_figure=0):
+        if number_of_figure == 0:
+            number_of_figure = self._number_of_figure
+        plt.figure(number_of_figure)
+
+        plt.scatter(pca_matrix[:, 0], pca_matrix[:, 1])
+
     def plot(self):
         self._number_of_figure += 1

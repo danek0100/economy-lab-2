@@ -8,6 +8,7 @@ from src.task_3 import task_3
 from src.task_4 import task_4
 from src.task_5 import task_5
 from src.painter import Painter
+from src.functions import pca_algorithm
 
 ids_path = "../resource/brazil_ids.csv"
 level_VaR = '0.95'
@@ -168,4 +169,5 @@ painter.plot_line_graph_from_df(pd.DataFrame({'Close': index.close_price}), 'Clo
 painter.plot()
 painter.plot_gist_from_df(index.profitability, 50)
 painter.plot()
+pca_algorithm(painter, stocks, df_for_graph, 94, index)
 plt.show()

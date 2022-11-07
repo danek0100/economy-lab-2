@@ -6,6 +6,7 @@ from scipy.optimize import minimize
 from tqdm import tqdm_notebook
 from src.data import get_market_index
 from scipy import stats
+from sklearn import decomposition
 
 
 def get_return_mean_cov(stocks):
@@ -167,3 +168,43 @@ def count_virtual_stock_without_risk(stocks):
     stocks_sorted_E = sorted(stocks_sorted_risks[:sum_el - 1], key=lambda x: x.E)
     downgrade_to = abs(stocks_sorted_E[0].E - stocks_sorted_E[-1].E)/2.0
     return [0, average_E - downgrade_to]
+
+def VaR_info(losses):
+    confidence_lvl = [0.9, 0.95, 0.99]
+    VaR = {}
+    for clvl in confidence_lvl:
+        loss = losses[np.isfinite(losses)]
+        VaR[clvl] = np.quantile(loss, clvl)
+        print(' - Потери не превысят %.4f с %.2f%s уверенностью.' % (VaR[clvl], clvl, '%'))
+
+
+def pca_algorithm(painter, stocks, df_for_graph, n_components, index):
+    pca = decomposition.PCA(n_components=n_components, random_state=12)
+    r_matrix, mean_vec, cov_matrix = get_return_mean_cov(stocks)
+    df = pd.DataFrame(r_matrix)
+    df = df.dropna()
+    r_matrix = df.values
+    pca.fit(r_matrix)
+    pca_matrix = pca.transform(r_matrix)
+    painter.plot_pca(pca_matrix)
+    painter.plot()
+    print(str(n_components) + " component significance: " + str(sum(pca.explained_variance_ratio_[:n_components])))
+    i = 0
+    weights = pca.components_
+    Xpca = weights[i] / sum(weights[i])
+    print('Xpca sum = ' + str(Xpca.sum()))
+    VaR_info(index.profitability)
+    for i in range(n_components):
+        Xpca = weights[i] / sum(weights[i])
+        Xpca.sum()
+        losses = -np.dot(r_matrix, Xpca)
+        print('Component ', i + 1)
+        VaR_info(losses)
+
+    painter.plot_stock_map(df_for_graph, "6")
+    painter.plot_point(index.risk, index.E, 'yellow', '*', 'BOVESPA индекс рынка')
+    pca_index_risk = risk_function_for_portfolio(Xpca, cov_matrix)
+    pca_index_return = np.dot(Xpca, mean_vec)
+    painter.plot_point(pca_index_risk, pca_index_return, 'black', '*', 'PCA индекс рынка')
+    painter.plot()
+
